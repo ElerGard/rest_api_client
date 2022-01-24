@@ -15,7 +15,6 @@ namespace rest_api
             string input;
             RestAPI api = new RestAPI();
 
-
             while (true)
             {
                 Console.WriteLine("Enter a number of action\n" +

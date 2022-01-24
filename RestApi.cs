@@ -2,11 +2,28 @@
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace rest_api
 {
+    
     class RestAPI
     {
+        struct response_result
+        {
+            public string data { get; set; }
+            public string error_message { get; set; }
+
+        }
+
+        struct todo
+        {
+            public int id { get; set; }
+            public string title { get; set; }
+            public string description { get; set; }
+
+        }
 
         static string URL;
 
@@ -17,6 +34,35 @@ namespace rest_api
         public RestAPI(string new_url)
         {
             URL = new_url;
+        }
+
+        private void printResponseResult(response_result res)
+        {
+            if (res.data != null)
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine(res.data + '\n');
+            }
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine(res.error_message + '\n');
+            }
+            Console.ForegroundColor = ConsoleColor.White;
+        }
+
+        private void printTodo(List<todo> list)
+        {
+            foreach (var s in list)
+            {
+                Console.Write("Id: ");
+                Console.WriteLine(s.id);
+                Console.Write("Title: ");
+                Console.WriteLine(s.title);
+                Console.Write("Description: ");
+                Console.WriteLine(s.description);
+                Console.WriteLine();
+            }
         }
 
         public int controlUser(string username, string password, string method)
@@ -30,7 +76,7 @@ namespace rest_api
             string encoded = Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1")
                                            .GetBytes(username + ":" + password));
             request.Headers.Add("authorization", "Basic " + encoded);
-
+            
             try
             {
                 HttpWebResponse response = (HttpWebResponse)request.GetResponse();
@@ -40,8 +86,8 @@ namespace rest_api
 
                     string responseFromServer = reader.ReadToEnd();
 
-                    Console.WriteLine(responseFromServer + '\n');
-
+                    response_result res = JsonConvert.DeserializeObject<response_result>(responseFromServer);
+                    printResponseResult(res);
                     reader.Close();
                     response.Close();
                     return 0;
@@ -54,7 +100,8 @@ namespace rest_api
                     HttpWebResponse errorResponse = (HttpWebResponse)wex.Response;
                     StreamReader reader = new StreamReader(errorResponse.GetResponseStream());
                     string error = reader.ReadToEnd();
-                    Console.WriteLine(error);
+                    response_result res = JsonConvert.DeserializeObject<response_result>(error);
+                    printResponseResult(res);
                     reader.Close();
                     errorResponse.Close();
                     return -1;
@@ -99,7 +146,17 @@ namespace rest_api
 
                     string responseFromServer = reader.ReadToEnd();
 
-                    Console.WriteLine(responseFromServer + '\n');
+                    if (method == "GET")
+                    {
+                        List<todo> res = JsonConvert.DeserializeObject<List<todo>>(responseFromServer);
+
+                        printTodo(res);
+                    }
+                    else
+                    {
+                        response_result res = JsonConvert.DeserializeObject<response_result>(responseFromServer);
+                        printResponseResult(res);
+                    }
 
                     reader.Close();
                     response.Close();
@@ -113,7 +170,8 @@ namespace rest_api
                     HttpWebResponse errorResponse = (HttpWebResponse)wex.Response;
                     StreamReader reader = new StreamReader(errorResponse.GetResponseStream());
                     string error = reader.ReadToEnd();
-                    Console.WriteLine(error);
+                    response_result res = JsonConvert.DeserializeObject<response_result>(error);
+                    printResponseResult(res);
                     return -1;
                 }
             }
