@@ -1,8 +1,5 @@
-﻿using System;
-using rest_api;
-using System.IO;
-using System.Net;
-using System.Text;
+﻿using rest_api;
+
 namespace client
 {
     class main
@@ -12,5 +9,4 @@ namespace client
             RestApiUI.start();
         }
     }
-    
 }

@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -80,8 +79,8 @@ namespace rest_api
             if (method == "POST" || method == "PUT")
             {
                 StreamWriter streamWriter = new StreamWriter(request.GetRequestStream());
-                string json = "{\"title\":" + title + "," +
-                                "\"description\":" + description + "}";
+                string json = "{\"title\":\"" + title + "\"," +
+                                "\"description\":\"" + description + "\"}";
 
                 streamWriter.Write(json);
                 streamWriter.Close();

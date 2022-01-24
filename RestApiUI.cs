@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace rest_api
 {
@@ -19,7 +15,7 @@ namespace rest_api
             string input;
             RestAPI api = new RestAPI();
 
-            
+
             while (true)
             {
                 Console.WriteLine("Enter a number of action\n" +
@@ -27,10 +23,13 @@ namespace rest_api
                                 "2. Log in\n");
                 input = Console.ReadLine();
                 int result;
-                Console.Write("Enter username: ");
-                username = Console.ReadLine();
-                Console.Write("Enter password: ");
-                password = Console.ReadLine();
+                if (input == "1" || input == "2")
+                {
+                    Console.Write("Enter username: ");
+                    username = Console.ReadLine();
+                    Console.Write("Enter password: ");
+                    password = Console.ReadLine();
+                }
                 switch (input)
                 {
                     case "1":
@@ -52,7 +51,7 @@ namespace rest_api
                                 "2. Create todo\n" +
                                 "3. Change todo\n" +
                                 "4. Delete todo\n" +
-                                "10. Log out\n" + 
+                                "10. Log out\n" +
                                 "11. Exit\n");
 
                         input = Console.ReadLine();
