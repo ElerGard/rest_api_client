@@ -6,6 +6,7 @@ namespace rest_api
     {
         static string username;
         static string password;
+        static string filename;
         static string title;
         static string description;
         static int id;
@@ -50,6 +51,10 @@ namespace rest_api
                                 "2. Create todo\n" +
                                 "3. Change todo\n" +
                                 "4. Delete todo\n" +
+                                "5. Upload file\n" +
+                                "6. See all files\n" +
+                                "7. Download file\n" +
+                                "8. Delete file\n" +
                                 "10. Log out\n" +
                                 "11. Exit\n");
 
@@ -64,30 +69,42 @@ namespace rest_api
                         }
                         if (input.Length == 1 && input[0] > '1' && input[0] < '5')
                         {
-                            if (input != "4")
-                            {
-                                Console.Write("Enter title of todo: ");
-                                title = Console.ReadLine();
-                                Console.Write("Enter description of todo: ");
-                                description = Console.ReadLine();
-                            }
                             if (input == "3" || input == "4")
                             {
                                 while (true)
                                 {
                                     try
                                     {
-                                        Console.Write("Enter id of todo: ");
+                                        Console.Write("Enter todo id what you wanna select for action: ");
                                         string st_id = Console.ReadLine();
+                                        Convert.ToInt32(st_id);
+
                                         id = Convert.ToInt32(st_id);
+                                        break;
                                     }
-                                    catch (OverflowException)
+                                    catch (Exception)
                                     {
                                         Console.WriteLine("Can't read this id. Please, write again");
                                     }
-                                    break;
+
                                 }
 
+                            }
+                            if (input != "4")
+                            {
+                                Console.Write("Enter new title of todo: ");
+                                title = Console.ReadLine();
+                                Console.Write("Enter new description of todo: ");
+                                description = Console.ReadLine();
+                            }
+                            
+                        }
+                        else if (input.Length == 1 && input[0] > '4' && input[0] < '9')
+                        {
+                            if (input != "6")
+                            {
+                                Console.Write("Enter filename what you wanna select for action: ");
+                                filename = Console.ReadLine();
                             }
                         }
                         switch (input)
@@ -103,6 +120,18 @@ namespace rest_api
                                 break;
                             case "4":
                                 api.controlTodo(username, password, "DELETE", id);
+                                break;
+                            case "5":
+                                api.controlFiles(username, password, "POST", filename);
+                                break;
+                            case "6":
+                                api.controlFiles(username, password, "GET", "");
+                                break;
+                            case "7":
+                                api.controlFiles(username, password, "GET", filename);
+                                break;
+                            case "8":
+                                api.controlFiles(username, password, "DELETE", filename);
                                 break;
                             default:
                                 break;

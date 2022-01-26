@@ -25,6 +25,13 @@ namespace rest_api
 
         }
 
+        struct file
+        {
+            public int id { get; set; }
+            public string filename { get; set; }
+            public string size_byte { get; set; }
+        }
+
         static string URL;
 
         public RestAPI()
@@ -41,12 +48,12 @@ namespace rest_api
             if (res.data != null)
             {
                 Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine(res.data + '\n');
+                Console.Write(res.data + '\n');
             }
             else
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine(res.error_message + '\n');
+                Console.Write(res.error_message + '\n');
             }
             Console.ForegroundColor = ConsoleColor.White;
         }
@@ -61,6 +68,20 @@ namespace rest_api
                 Console.WriteLine(s.title);
                 Console.Write("Description: ");
                 Console.WriteLine(s.description);
+                Console.WriteLine();
+            }
+        }
+
+        private void printFiles(List<file> list)
+        {
+            foreach (var s in list)
+            {
+                Console.Write("Id: ");
+                Console.WriteLine(s.id);
+                Console.Write("Filename: ");
+                Console.WriteLine(s.filename);
+                Console.Write("File size in bytes: ");
+                Console.WriteLine(s.size_byte);
                 Console.WriteLine();
             }
         }
@@ -148,6 +169,12 @@ namespace rest_api
 
                     if (method == "GET")
                     {
+                        if (responseFromServer[responseFromServer.Length-1] != ']')
+                        {
+                            response_result res1 = JsonConvert.DeserializeObject<response_result>(responseFromServer);
+                            printResponseResult(res1);
+                            return 0;
+                        }
                         List<todo> res = JsonConvert.DeserializeObject<List<todo>>(responseFromServer);
 
                         printTodo(res);
@@ -161,6 +188,102 @@ namespace rest_api
                     reader.Close();
                     response.Close();
                     return 0;
+                }
+            }
+            catch (WebException wex)
+            {
+                if (wex.Response != null)
+                {
+                    HttpWebResponse errorResponse = (HttpWebResponse)wex.Response;
+                    StreamReader reader = new StreamReader(errorResponse.GetResponseStream());
+                    string error = reader.ReadToEnd();
+                    response_result res = JsonConvert.DeserializeObject<response_result>(error);
+                    printResponseResult(res);
+                    return -1;
+                }
+            }
+            return -1;
+        }
+
+        public int controlFiles(string username, string password, string method, string filename = "")
+        {
+            string encoded = Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1")
+                                           .GetBytes(username + ":" + password));
+
+            WebRequest request;
+            if (method == "POST")
+            {
+                request = WebRequest.Create(URL + "files/");
+            }
+            else
+                request = WebRequest.Create(URL + "files/" + filename);
+
+            request.Credentials = CredentialCache.DefaultCredentials;
+            request.Method = method;
+            request.Headers.Add("authorization", "Basic " + encoded);
+
+            try
+            {
+                if (method == "POST")
+                {
+                    if (!File.Exists(filename))
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("File doesn't exist");
+                        Console.ForegroundColor = ConsoleColor.White;
+                        return -1;
+                    }
+
+                    using (var client = new WebClient())
+                    {
+                        client.Headers.Add("authorization", "Basic " + encoded);
+
+                        client.UploadFile(URL + "files/", filename);
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.Write("Your file has been uploaded\n");
+                        Console.ForegroundColor = ConsoleColor.White;
+                        return 0;
+                    }
+                }
+                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+                StreamReader reader = new StreamReader(response.GetResponseStream());
+
+                string responseFromServer = reader.ReadToEnd();
+
+                if (response != null)
+                {
+                    if (response.ContentType == "application/json")
+                    {
+                        if (filename == "")
+                        {
+                            List<file> res = JsonConvert.DeserializeObject<List<file>>(responseFromServer);
+                            printFiles(res);
+                            return 0;
+                        }
+                        else
+                        {
+                            response_result res = JsonConvert.DeserializeObject<response_result>(responseFromServer);
+                            printResponseResult(res);
+                            return 0;
+                        }
+                    }
+                    if (method == "GET" && filename != "")
+                    {
+                        
+                        using (var client = new WebClient())
+                        {
+                            client.Headers.Add("authorization", "Basic " + encoded);
+
+                            
+                            client.DownloadFile(URL + "files/" + filename, filename);
+                            Console.ForegroundColor = ConsoleColor.Green;
+                            Console.WriteLine("Dowload file complete\n");
+                            Console.ForegroundColor = ConsoleColor.White;
+
+                            return 0;
+                        }
+                    }
+                    
                 }
             }
             catch (WebException wex)
